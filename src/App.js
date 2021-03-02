@@ -1,23 +1,39 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter, Switch, Route, useHistory } from "react-router-dom";
+import { Security, SecureRoute, LoginCallback } from "@okta/okta-react";
+import { OktaAuth } from "@okta/okta-auth-js";
+
+import Navbar from "./components/layout/Navbar";
+import Home from "./components/pages/Home";
+import Staff from "./components/pages/Staff";
+import Login from "./components/auth/Login";
+import { oktaAuthConfig, oktaSignInConfig } from "./config";
+
+const oktaAuth = new OktaAuth(oktaAuthConfig);
 
 function App() {
+  const history = useHistory();
+
+  const customAuthHandler = () => {
+    history.push("/login");
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="container main-container">
+      <BrowserRouter>
+        <Navbar />
+        <Security oktaAuth={oktaAuth} onAuthRequired={customAuthHandler}>
+          <Switch>
+            <Route path="/login">
+              <Login config={oktaSignInConfig} />
+            </Route>
+            <SecureRoute path="/staff" component={Staff} />
+            <Route exact path="/">
+              <Home />
+            </Route>
+            <Route path="/login/callback" component={LoginCallback} />
+          </Switch>
+        </Security>
+      </BrowserRouter>
     </div>
   );
 }
